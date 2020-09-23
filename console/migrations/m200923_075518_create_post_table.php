@@ -8,7 +8,7 @@ use yii\db\Migration;
  *
  * - `{{%user}}`
  */
-class m200923_072354_create_post_table extends Migration
+class m200923_075518_create_post_table extends Migration
 {
     /**
      * {@inheritdoc}
@@ -18,9 +18,9 @@ class m200923_072354_create_post_table extends Migration
         $this->createTable('{{%post}}', [
             'id' => $this->primaryKey(),
             'title' => $this->string(512)->notNull(),
-            'perex' => $this->text()(),
-            'content' => $this->text()(),
-            'publishedAt' => $this->timestamp()()->notNull(),
+            'perex' => $this->text(),
+            'content' => $this->text(),
+            'publishedAt' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
             'userId' => $this->integer(11),
         ]);
 
