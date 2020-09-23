@@ -20,6 +20,7 @@ class m200923_075518_create_post_table extends Migration
             'title' => $this->string(512)->notNull(),
             'perex' => $this->text(),
             'content' => $this->text(),
+            'tags'  => $this->string(512),
             'publishedAt' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
             'userId' => $this->integer(11),
         ]);
