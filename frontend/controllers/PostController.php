@@ -1,13 +1,16 @@
 <?php
 
-namespace backend\controllers;
+namespace frontend\controllers;
 
 use Yii;
 use common\models\Post;
 use yii\data\ActiveDataProvider;
+use yii\data\SqlDataProvider;
+use yii\data\Pagination;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 use yii\web\UploadedFile;
 
 /**
@@ -23,6 +26,26 @@ class PostController extends Controller
     public function behaviors()
     {
         return [
+            'access' => [
+              'class' => AccessControl::className(),
+              'rules' => [
+                  [
+                      'actions' => ['login', 'error', 'show', 'view'],
+                      'allow' => true,
+                  ],
+                  [
+                      'actions' => ['logout', 'create','index'],
+                      'allow' => true,
+                      'roles' => ['@'],
+                  ],
+                  [
+                    'actions' => ['delete', 'update'],
+                    'allow' => true,
+                    'roles' => ['@'],
+
+                ],
+              ],
+            ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
@@ -31,20 +54,64 @@ class PostController extends Controller
             ],
         ];
     }
-
+    public function allowOnlyOwner(){
+        $post = Post::model()->findByPk($_GET["id"]);
+        $this->post = $post; 
+        return $post->userId === Yii::app()->user->id;
+      
+  }
     /**
      * Lists all Post models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $dataProvider = new ActiveDataProvider([
-            'query' => Post::find(),
+        $query = new \yii\db\Query;
+        $pagination = new Pagination([
+            'defaultPageSize' => 5,
+            'totalCount' => $query->from('post')->where(['userId' => Yii::$app->user->identity->id])
+            ->count(),
         ]);
 
+        $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username'])
+            ->from('post')
+            ->innerJoin('user', 'user.id = post.userId')
+            ->where(['post.userId' => Yii::$app->user->identity->id])
+            ->orderBy(['publishedAt' => SORT_DESC])
+            ->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+            
         return $this->render('index', [
-            'dataProvider' => $dataProvider,
+            'posts' => $posts,
+            'pagination' => $pagination,
         ]);
+    }
+
+    /**
+     * Lists all Post models.
+     * @return mixed
+     */
+    public function actionShow()
+    {
+      $query = new \yii\db\Query;
+      $pagination = new Pagination([
+          'defaultPageSize' => 5,
+          'totalCount' => $query->from('post')->count(),
+      ]);
+
+      $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username'])
+          ->from('post')
+          ->innerJoin('user', 'user.id = post.userId')
+          ->orderBy(['publishedAt' => SORT_DESC])
+          ->offset($pagination->offset)
+          ->limit($pagination->limit)
+          ->all();
+          
+      return $this->render('show', [
+          'posts' => $posts,
+          'pagination' => $pagination,
+      ]);
     }
 
     /**
@@ -55,8 +122,15 @@ class PostController extends Controller
      */
     public function actionView($id)
     {
+        $query = new \yii\db\Query;
+        $post = $query->select(['post.id', 'title', 'content', 'perex', 'publishedAt', 'userId', 'tags','username'])
+            ->from('post')
+            ->innerJoin('user', 'user.id = post.userId')
+            ->where(['post.id' => $id])
+            ->one();
+            
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'post' => $post,
         ]);
     }
 
@@ -92,6 +166,8 @@ class PostController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+
+        $model->photoFile = UploadedFile::getInstance($model, 'photo');
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);

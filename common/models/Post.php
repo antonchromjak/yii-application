@@ -45,7 +45,7 @@ class Post extends \yii\db\ActiveRecord
             [['userId'], 'integer'],
             [['title', 'tags'], 'string', 'max' => 512],
             [['userId'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['userId' => 'id']],
-            [['photo'], 'file', 'skipOnEmpty' => true, 'extensions' => 'png, jpg'],
+            [['photo'], 'file', 'skipOnEmpty' => true, 'extensions' => 'jpg'],
         ];
     }
 
@@ -95,11 +95,13 @@ class Post extends \yii\db\ActiveRecord
             return false;
         }
         if($isInsert){
-            $photoPath = Yii::getAlias('@frontend/web/storage/photos/' . $this->id . '.jpg');
+            $photoPath = Yii::getAlias('@frontend/web/storage/photos/' 
+            . $this->id .'.'. pathinfo($this->photoFile->name, PATHINFO_EXTENSION));
             if(!is_dir(dirname($photoPath))){
                 FileHelper::createDirectory(dirname($photoPath));
             }
-            $this->photoFile->saveAs($photoPath);
+            if($this->photoFile)
+                $this->photoFile->saveAs($photoPath);
         }
         return true;
     }

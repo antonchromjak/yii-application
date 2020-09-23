@@ -2,9 +2,12 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-
+use coderius\pell\Pell;
 /* @var $this yii\web\View */
 /* @var $model common\models\Post */
+
+\frontend\assets\TagsInputAsset::register($this);
+
 
 $this->title = 'Create Post';
 $this->params['breadcrumbs'][] = ['label' => 'Posts', 'url' => ['index']];
@@ -22,9 +25,11 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <?= $form->field($model, 'perex')->textarea(['rows' => 3]) ?>
 
-<?= $form->field($model, 'content')->textarea(['rows' => 9]) ?>
 
-<?= $form->field($model, 'tags')->textInput(['maxlength' => true]) ?>
+
+<?= $form->field($model, 'content')->widget(Pell::className(), []);?>
+
+<?= $form->field($model, 'tags', ['inputOptions' => ['data-role' => 'tagsinput']])->textInput(['maxlength' => true]) ?>
 
 <?= $form->field($model, 'photo')->fileInput() ?>
 

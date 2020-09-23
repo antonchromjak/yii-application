@@ -22,7 +22,10 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
-
+            [
+                'attribute' => 'userId',
+                'value' => 'user.username',
+            ],
             'id',
             'title',
             'perex:ntext',
