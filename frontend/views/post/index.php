@@ -40,7 +40,7 @@ exit;*/
         <div class="text">
           <h2><?= Html::encode("{$post['title']}") ?></h2>
           <p><?= $post->publishedAt ?> Posted <?= Html::encode("{$post['publishedAt']}") ?> by 
-          <?= Html::a(Html::encode("{$post['username']}"), ['user/view', 'id' => $post['userId']], ['class' => 'post-link user']) ?>
+          <?= Html::a(Html::encode("{$post['username']}"), ['user/view', 'id' => $post['userId']], ['class' => 'post-link user', 'title' => Html::encode("{$post['about']}")]) ?>
           
         </p>
           <p><?= Html::encode("{$post['perex']}") ?></p>
@@ -59,7 +59,7 @@ exit;*/
         <?= Html::a('view', ['post/view', 'id' => $post['id']], ['class' => 'post-link view']) ?>
           <?= Html::a( 'delete', 
                       ['post/delete', 'id' => $post['id']], 
-                      ['class' => 'post-link delete','data-method' => 'POST']) ?>
+                      ['class' => 'post-link delete','data-method' => 'POST','data-confirm' => 'Are you sure?']) ?>
           <?= Html::a('update', ['post/update', 'id' => $post['id']], ['class' => 'post-link update']) ?>
         </div>
         <div class="clear"></div>

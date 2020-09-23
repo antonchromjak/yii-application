@@ -73,7 +73,7 @@ class PostController extends Controller
             ->count(),
         ]);
 
-        $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username'])
+        $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
             ->from('post')
             ->innerJoin('user', 'user.id = post.userId')
             ->where(['post.userId' => Yii::$app->user->identity->id])
@@ -100,7 +100,7 @@ class PostController extends Controller
           'totalCount' => $query->from('post')->count(),
       ]);
 
-      $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username'])
+      $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
           ->from('post')
           ->innerJoin('user', 'user.id = post.userId')
           ->orderBy(['publishedAt' => SORT_DESC])
@@ -123,7 +123,7 @@ class PostController extends Controller
     public function actionView($id)
     {
         $query = new \yii\db\Query;
-        $post = $query->select(['post.id', 'title', 'content', 'perex', 'publishedAt', 'userId', 'tags','username'])
+        $post = $query->select(['post.id', 'title', 'content', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
             ->from('post')
             ->innerJoin('user', 'user.id = post.userId')
             ->where(['post.id' => $id])

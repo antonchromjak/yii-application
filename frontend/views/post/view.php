@@ -23,7 +23,7 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <div class="text">
           <p><?= $post->publishedAt ?> Posted <?= Html::encode("{$post['publishedAt']}") ?> by 
-          <?= Html::a(Html::encode("{$post['username']}"), ['user/view', 'id' => $post['userId']], ['class' => 'post-link user']) ?>
+          <?= Html::a(Html::encode("{$post['username']}"), ['user/view', 'id' => $post['userId']], ['class' => 'post-link user']) ?> (<?= Html::encode("{$post['about']}")?>)
           
         </p>
           <p class="perex"><?= Html::encode("{$post['perex']}") ?></p>
