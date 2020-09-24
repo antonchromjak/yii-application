@@ -2,7 +2,8 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
-
+use yii\helpers\Url;
+use yii\widgets\LinkPager;
 /* @var $this yii\web\View */
 /* @var $model common\models\Post */
 
@@ -37,7 +38,7 @@ $this->params['breadcrumbs'][] = $this->title;
         if($tags[0] == '') $tags = array();
         
         foreach ($tags as $tag): ?>
-          <?= Html::a(trim($tag), ['post/tag', 'id' => trim($tag)], ['class' => 'post-link view']) ?>
+          <?= Html::a(trim($tag), ['post/search', 'keyword' => trim($tag)], ['class' => 'post-link view']) ?>
         <?php endforeach; ?>
         </div>
         <div class="tool">
@@ -46,3 +47,27 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="clear"></div>
     </li>
 </ul>
+<form action="<?php echo Url::to(['/comment/create']) ?>"class="">
+    <input type="hidden" id="postId" name="postId" value="<?= Html::encode("{$post['id']}") ?>">
+    <button class="btn btn-outline-success">Comment</button>
+</form>
+
+<ul>
+<br>
+<h2>Comments:</h2>
+<br>
+<?php foreach ($comments as $comment): ?>
+    <li>
+        <div class="by">
+          Posted by <?= Html::a(Html::encode("{$comment['username']}"), NULL, ['class' => 'post-link user', 'title' => Html::encode("{$comment['about']}")]) ?>
+        </div>
+        <div class="comment">
+          <?= Html::encode("{$comment['content']}") ?>
+        </div>
+
+        <div class="clear"></div>
+    </li>
+<?php endforeach; ?>
+</ul>
+
+<?= LinkPager::widget(['pagination' => $pagination]) ?>

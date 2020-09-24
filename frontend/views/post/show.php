@@ -34,7 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="text">
           <h2><?= Html::encode("{$post['title']}") ?></h2>
           <p><?= $post->publishedAt ?> Posted <?= Html::encode("{$post['publishedAt']}") ?> by 
-          <?= Html::a(Html::encode("{$post['username']}"), ['user/view', 'id' => $post['userId']], ['class' => 'post-link user', 'title' => Html::encode("{$post['about']}")]) ?>
+          <?= Html::a(Html::encode("{$post['username']}"), NULL, ['class' => 'post-link user', 'title' => Html::encode("{$post['about']}")]) ?>
           
         </p>
           <p><?= Html::encode("{$post['perex']}") ?></p>
@@ -46,7 +46,7 @@ $this->params['breadcrumbs'][] = $this->title;
         if($tags[0] == '') $tags = array();
         
         foreach ($tags as $tag): ?>
-          <?= Html::a(trim($tag), ['post/tag', 'id' => trim($tag)], ['class' => 'post-link view']) ?>
+          <?= Html::a(trim($tag), ['post/search', 'keyword' => trim($tag)], ['class' => 'post-link view']) ?>
         <?php endforeach; ?>
         </div>
         <div class="tool">

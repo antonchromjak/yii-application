@@ -12,7 +12,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\UploadedFile;
-
+use yii\db\Expression;
 /**
  * PostController implements the CRUD actions for Post model.
  */
@@ -97,7 +97,10 @@ class PostController extends Controller
       $query = new \yii\db\Query;
       $pagination = new Pagination([
           'defaultPageSize' => 5,
-          'totalCount' => $query->from('post')->count(),
+          'totalCount' => $query
+          ->from('post')
+          ->where(['like', 'tags', '%' . $_GET['keyword'] . '%', false])
+          ->count(),
       ]);
 
       $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
@@ -127,7 +130,8 @@ class PostController extends Controller
           'totalCount' => $query->from('post')->count(),
       ]);
 
-      $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
+      $posts = $query
+      ->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
           ->from('post')
           ->innerJoin('user', 'user.id = post.userId')
           ->orderBy(['publishedAt' => SORT_DESC])
@@ -155,10 +159,43 @@ class PostController extends Controller
             ->innerJoin('user', 'user.id = post.userId')
             ->where(['post.id' => $id])
             ->one();
+
+
+
+
+        $comments_user = (new \yii\db\Query())
+            ->select(['comment.id','content', 'user.username', 'user.about'])
+            ->from('comment')
+            ->innerJoin('user', 'user.id = comment.userId')
+            ->where(['comment.postId' => $id]);
+
+        $anonymousExpression = new Expression("'anonymous' as `username`");
+        $aboutExpression = new Expression("'anonymous user' as `about`");
+        $comments_anonymous = (new \yii\db\Query())
+        ->select(['comment.id','content', $anonymousExpression, $aboutExpression])
+        ->from('comment')
+        ->where(['comment.postId' => $id])
+        ->andWhere(['comment.userId' => NULL]);
+
+        $pagination = new Pagination([
+          'defaultPageSize' => 5,
+          'totalCount' => (new \yii\db\Query())
+          ->from(['comments' => $comments_user->union($comments_anonymous)])->count()
+      ]);
+
+        $comments = (new \yii\db\Query())
+            ->from(['comments' => $comments_user->union($comments_anonymous)])
+            ->orderBy(['id' => SORT_DESC])
+            ->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
             
         return $this->render('view', [
             'post' => $post,
+            'comments' => $comments,
+            'pagination' => $pagination,
         ]);
+
     }
 
     /**
