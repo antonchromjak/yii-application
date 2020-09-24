@@ -13,7 +13,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\UploadedFile;
 use yii\db\Expression;
-//use yii\filters\AccessRule;
+use yii\filters\AccessRule;
 /**
  * PostController implements the CRUD actions for Post model.
  */
@@ -29,18 +29,29 @@ class PostController extends Controller
     {
         return [
             'access' => [
-            'class' => AccessControl::className(),
-            'rules' => [
-                [
-                    'actions' => ['login', 'error', 'show', 'view', 'search'],
-                    'allow' => true,
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'actions' => ['login', 'error', 'show', 'view', 'search'],
+                        'allow' => true,
+                    ],
+                    [
+                        'actions' => ['logout', 'create','index'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                    [
+                        'actions' => ['update', 'delete'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            if ($this->isUserAuthor()) {
+                                return true;
+                            }
+                            return false;
+                        }
+                    ],
                 ],
-                [
-                    'actions' => ['logout', 'create','index'],
-                    'allow' => true,
-                    'roles' => ['@'],
-                ],
-            ],
             ],
             'verbs' => [
                 'class' => VerbFilter::className(),
@@ -51,40 +62,18 @@ class PostController extends Controller
         ];
     }
 
-    public function filters() {
-        return array(
-            'accessControl', // perform access control for CRUD operations
-        );
+    protected function isUserAuthor()
+    {   
+        $query = new \yii\db\Query;
+        $post = $query->select(['userId'])
+            ->from('post')
+            ->innerJoin('user', 'user.id = post.userId')
+            ->where(['post.id' => $_GET["id"]])
+            ->one();
+
+        return $post['userId'] == Yii::$app->user->identity->id;
     }
-    public function accessRules() {
-        return array(
-            array('allow', // allow all users to perform 'index' and 'view' actions
-                'actions' => array('login', 'error', 'show', 'view', 'search'),
-                'users' => array('*'),
-            ),
-            array('allow', // allow authenticated user to perform 'create' action
-                'actions' => array('logout', 'create','index'),
-                'users' => array('@'),
-            ),
-            array('allow', // allow only the owner to perform 'view' 'update' 'delete' actions
-                'actions' => array('update', 'delete'),
-                'expression' => array('PostController','allowOnlyOwner')
-            ),
-            array('allow', // allow admin user to perform 'admin' and 'delete' actions
-                'actions' => array('admin', 'delete'),
-                'users' => array('admin', 'foo', 'bar'),
-            ),
-            array('deny', // deny all users
-                'users' => array('*'),
-            ),
-        );
-    }
-    public function allowOnlyOwner(){
-        $post = Post::model()->findByPk($_GET["id"]);
-        $this->post = $post; 
-        return $post->userId === Yii::app()->user->id;
-        
-    }
+
     /**
      * Lists all Post models.
      * @return mixed
