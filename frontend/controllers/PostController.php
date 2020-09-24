@@ -13,6 +13,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\UploadedFile;
 use yii\db\Expression;
+//use yii\filters\AccessRule;
 /**
  * PostController implements the CRUD actions for Post model.
  */
@@ -20,6 +21,7 @@ class PostController extends Controller
 {
     public $photo;
     
+
     /**
      * {@inheritdoc}
      */
@@ -27,24 +29,18 @@ class PostController extends Controller
     {
         return [
             'access' => [
-              'class' => AccessControl::className(),
-              'rules' => [
-                  [
-                      'actions' => ['login', 'error', 'show', 'view', 'search'],
-                      'allow' => true,
-                  ],
-                  [
-                      'actions' => ['logout', 'create','index'],
-                      'allow' => true,
-                      'roles' => ['@'],
-                  ],
-                  [
-                    'actions' => ['delete', 'update'],
+            'class' => AccessControl::className(),
+            'rules' => [
+                [
+                    'actions' => ['login', 'error', 'show', 'view', 'search'],
+                    'allow' => true,
+                ],
+                [
+                    'actions' => ['logout', 'create','index'],
                     'allow' => true,
                     'roles' => ['@'],
-
                 ],
-              ],
+            ],
             ],
             'verbs' => [
                 'class' => VerbFilter::className(),
@@ -54,12 +50,41 @@ class PostController extends Controller
             ],
         ];
     }
+
+    public function filters() {
+        return array(
+            'accessControl', // perform access control for CRUD operations
+        );
+    }
+    public function accessRules() {
+        return array(
+            array('allow', // allow all users to perform 'index' and 'view' actions
+                'actions' => array('login', 'error', 'show', 'view', 'search'),
+                'users' => array('*'),
+            ),
+            array('allow', // allow authenticated user to perform 'create' action
+                'actions' => array('logout', 'create','index'),
+                'users' => array('@'),
+            ),
+            array('allow', // allow only the owner to perform 'view' 'update' 'delete' actions
+                'actions' => array('update', 'delete'),
+                'expression' => array('PostController','allowOnlyOwner')
+            ),
+            array('allow', // allow admin user to perform 'admin' and 'delete' actions
+                'actions' => array('admin', 'delete'),
+                'users' => array('admin', 'foo', 'bar'),
+            ),
+            array('deny', // deny all users
+                'users' => array('*'),
+            ),
+        );
+    }
     public function allowOnlyOwner(){
         $post = Post::model()->findByPk($_GET["id"]);
         $this->post = $post; 
         return $post->userId === Yii::app()->user->id;
-      
-  }
+        
+    }
     /**
      * Lists all Post models.
      * @return mixed
@@ -94,28 +119,28 @@ class PostController extends Controller
      */
     public function actionSearch()
     {
-      $query = new \yii\db\Query;
-      $pagination = new Pagination([
-          'defaultPageSize' => 5,
-          'totalCount' => $query
-          ->from('post')
-          ->where(['like', 'tags', '%' . $_GET['keyword'] . '%', false])
-          ->count(),
-      ]);
+        $query = new \yii\db\Query;
+        $pagination = new Pagination([
+            'defaultPageSize' => 5,
+            'totalCount' => $query
+            ->from('post')
+            ->where(['like', 'tags', '%' . $_GET['keyword'] . '%', false])
+            ->count(),
+        ]);
 
-      $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
-          ->from('post')
-          ->innerJoin('user', 'user.id = post.userId')
-          ->where(['like', 'tags', '%' . $_GET['keyword'] . '%', false])
-          ->orderBy(['publishedAt' => SORT_DESC])
-          ->offset($pagination->offset)
-          ->limit($pagination->limit)
-          ->all();
-          
-      return $this->render('show', [
-          'posts' => $posts,
-          'pagination' => $pagination,
-      ]);
+        $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
+            ->from('post')
+            ->innerJoin('user', 'user.id = post.userId')
+            ->where(['like', 'tags', '%' . $_GET['keyword'] . '%', false])
+            ->orderBy(['publishedAt' => SORT_DESC])
+            ->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+            
+        return $this->render('show', [
+            'posts' => $posts,
+            'pagination' => $pagination,
+        ]);
     }
 
     /**
@@ -124,25 +149,25 @@ class PostController extends Controller
      */
     public function actionShow()
     {
-      $query = new \yii\db\Query;
-      $pagination = new Pagination([
-          'defaultPageSize' => 5,
-          'totalCount' => $query->from('post')->count(),
-      ]);
+        $query = new \yii\db\Query;
+        $pagination = new Pagination([
+            'defaultPageSize' => 5,
+            'totalCount' => $query->from('post')->count(),
+        ]);
 
-      $posts = $query
-      ->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
-          ->from('post')
-          ->innerJoin('user', 'user.id = post.userId')
-          ->orderBy(['publishedAt' => SORT_DESC])
-          ->offset($pagination->offset)
-          ->limit($pagination->limit)
-          ->all();
-          
-      return $this->render('show', [
-          'posts' => $posts,
-          'pagination' => $pagination,
-      ]);
+        $posts = $query
+        ->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
+            ->from('post')
+            ->innerJoin('user', 'user.id = post.userId')
+            ->orderBy(['publishedAt' => SORT_DESC])
+            ->offset($pagination->offset)
+            ->limit($pagination->limit)
+            ->all();
+            
+        return $this->render('show', [
+            'posts' => $posts,
+            'pagination' => $pagination,
+        ]);
     }
 
     /**
@@ -160,9 +185,6 @@ class PostController extends Controller
             ->where(['post.id' => $id])
             ->one();
 
-
-
-
         $comments_user = (new \yii\db\Query())
             ->select(['comment.id','content', 'user.username', 'user.about'])
             ->from('comment')
@@ -178,10 +200,10 @@ class PostController extends Controller
         ->andWhere(['comment.userId' => NULL]);
 
         $pagination = new Pagination([
-          'defaultPageSize' => 5,
-          'totalCount' => (new \yii\db\Query())
-          ->from(['comments' => $comments_user->union($comments_anonymous)])->count()
-      ]);
+            'defaultPageSize' => 5,
+            'totalCount' => (new \yii\db\Query())
+            ->from(['comments' => $comments_user->union($comments_anonymous)])->count()
+        ]);
 
         $comments = (new \yii\db\Query())
             ->from(['comments' => $comments_user->union($comments_anonymous)])
