@@ -4,7 +4,7 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\widgets\LinkPager;
 use common\models\User;
-
+use yii\helpers\Url;
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
@@ -19,7 +19,13 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
 <ul>
-
+<form action="<?php echo Url::to(['/post/search']) ?>"
+        class="form-inline my-2 my-lg-0">
+    <input class="form-control mr-sm-2" type="search" placeholder="Search"
+        name="keyword"
+        value="<?php echo Yii::$app->request->get('keyword') ?>">
+    <button class="btn btn-outline-success my-2 my-sm-0">Search</button>
+</form>
 <?php foreach ($posts as $post): ?>
     <li>
         <div class="photo">

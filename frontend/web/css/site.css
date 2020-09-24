@@ -184,3 +184,7 @@ a.desc:after {
 .perex {
   font-style: italic;
 }
+
+.form-inline.my-2.my-lg-0 {
+  margin-bottom: 30px;
+}

@@ -30,7 +30,7 @@ class PostController extends Controller
               'class' => AccessControl::className(),
               'rules' => [
                   [
-                      'actions' => ['login', 'error', 'show', 'view'],
+                      'actions' => ['login', 'error', 'show', 'view', 'search'],
                       'allow' => true,
                   ],
                   [
@@ -86,6 +86,33 @@ class PostController extends Controller
             'posts' => $posts,
             'pagination' => $pagination,
         ]);
+    }
+
+    /**
+     * Lists all Post models.
+     * @return mixed
+     */
+    public function actionSearch()
+    {
+      $query = new \yii\db\Query;
+      $pagination = new Pagination([
+          'defaultPageSize' => 5,
+          'totalCount' => $query->from('post')->count(),
+      ]);
+
+      $posts = $query->select(['post.id', 'title', 'perex', 'publishedAt', 'userId', 'tags','username','about'])
+          ->from('post')
+          ->innerJoin('user', 'user.id = post.userId')
+          ->where(['like', 'tags', '%' . $_GET['keyword'] . '%', false])
+          ->orderBy(['publishedAt' => SORT_DESC])
+          ->offset($pagination->offset)
+          ->limit($pagination->limit)
+          ->all();
+          
+      return $this->render('show', [
+          'posts' => $posts,
+          'pagination' => $pagination,
+      ]);
     }
 
     /**

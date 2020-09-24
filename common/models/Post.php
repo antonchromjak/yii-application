@@ -105,4 +105,10 @@ class Post extends \yii\db\ActiveRecord
         }
         return true;
     }
+    public function afterDelete(){
+        parent::afterDelete();
+        $photoPath = Yii::getAlias('@frontend/web/storage/photos/' . $this->id .'.jpg');
+        if(file_exists($photoPath))
+            unlink($photoPath);
+    }
 }
