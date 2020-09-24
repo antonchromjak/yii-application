@@ -87,9 +87,7 @@ class Post extends \yii\db\ActiveRecord
     public function save($runValidation = true, $attributeNames = null)
     {
         $isInsert = $this->isNewRecord;
-        if($isInsert){
-            //$this->photo = $this->photoFile->name;
-        }
+        
         $saved = parent::save($runValidation, $attributeNames);
         if(!$saved){
             return false;

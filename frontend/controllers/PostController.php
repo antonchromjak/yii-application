@@ -13,7 +13,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use yii\web\UploadedFile;
 use yii\db\Expression;
-use yii\filters\AccessRule;
+
 /**
  * PostController implements the CRUD actions for Post model.
  */
